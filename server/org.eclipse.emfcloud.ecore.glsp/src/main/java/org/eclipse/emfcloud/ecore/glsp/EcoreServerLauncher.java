@@ -21,6 +21,8 @@ import org.eclipse.glsp.server.launch.GLSPServerLauncher;
 
 public class EcoreServerLauncher {
 
+	private static final int DEFAULT_PORT = 5007;
+	
 	public static void main(String[] args) {
 		int port = getPort(args);
 		
@@ -39,6 +41,6 @@ public class EcoreServerLauncher {
 				return Integer.parseInt(args[i+1]);
 			}
 		}
-		throw new IllegalArgumentException("No port is defined for ECORE-GLSP. Specify a port as a command line argument with '--port <portnumber>'");
+		return DEFAULT_PORT;
 	}
 }
