@@ -10,11 +10,7 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.ecore.glsp;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.eclipse.emfcloud.ecore.glsp.actions.EcoreActionProvider;
+import org.eclipse.emfcloud.ecore.glsp.actions.AttributeTypesAction;
 import org.eclipse.emfcloud.ecore.glsp.handler.EcoreComputedBoundsActionHandler;
 import org.eclipse.emfcloud.ecore.glsp.handler.EcoreGetAttributeTypesActionHandler;
 import org.eclipse.emfcloud.ecore.glsp.handler.EcoreOperationActionHandler;
@@ -29,13 +25,15 @@ import org.eclipse.emfcloud.ecore.glsp.operationhandler.CreateEcoreEdgeOperation
 import org.eclipse.emfcloud.ecore.glsp.operationhandler.EcoreChangeBoundsOperationHandler;
 import org.eclipse.emfcloud.ecore.glsp.operationhandler.EcoreDeleteOperationHandler;
 import org.eclipse.emfcloud.ecore.glsp.operationhandler.EcoreLabelEditOperationHandler;
+import org.eclipse.glsp.api.action.Action;
 import org.eclipse.glsp.api.configuration.ServerConfiguration;
+import org.eclipse.glsp.api.di.MultiBindings;
 import org.eclipse.glsp.api.diagram.DiagramConfiguration;
 import org.eclipse.glsp.api.factory.ModelFactory;
+import org.eclipse.glsp.api.handler.ActionHandler;
 import org.eclipse.glsp.api.handler.OperationHandler;
 import org.eclipse.glsp.api.layout.ILayoutEngine;
 import org.eclipse.glsp.api.model.ModelStateProvider;
-import org.eclipse.glsp.api.provider.ActionProvider;
 import org.eclipse.glsp.server.actionhandler.ComputedBoundsActionHandler;
 import org.eclipse.glsp.server.actionhandler.OperationActionHandler;
 import org.eclipse.glsp.server.actionhandler.SaveModelActionHandler;
@@ -44,18 +42,20 @@ import org.eclipse.glsp.server.di.DefaultGLSPModule;
 
 public class EcoreGLSPModule extends DefaultGLSPModule {
 
-	public EcoreGLSPModule() {
-		rebind(SaveModelActionHandler.class, EcoreSaveModelActionHandler.class);
-		rebind(ComputedBoundsActionHandler.class, EcoreComputedBoundsActionHandler.class);
-		rebind(OperationActionHandler.class, EcoreOperationActionHandler.class);
-		rebind(UndoRedoActionHandler.class, EcoreUndoRedoActionHandler.class);
-
-		bindActionHandlers().add(EcoreGetAttributeTypesActionHandler.class);
-	}
-
 	@Override
-	protected Class<? extends ActionProvider> bindActionProvider() {
-		return EcoreActionProvider.class; // includes AttributeTypesAction & DefaultActionProvider
+	protected void configureActionHandlers(MultiBindings<ActionHandler> bindings) {
+		super.configureActionHandlers(bindings);
+		bindings.add(EcoreGetAttributeTypesActionHandler.class);
+		bindings.rebind(SaveModelActionHandler.class, EcoreSaveModelActionHandler.class);
+		bindings.rebind(ComputedBoundsActionHandler.class, EcoreComputedBoundsActionHandler.class);
+		bindings.rebind(OperationActionHandler.class, EcoreOperationActionHandler.class);
+		bindings.rebind(UndoRedoActionHandler.class, EcoreUndoRedoActionHandler.class);
+	}
+	
+	@Override
+	protected void configureActions(MultiBindings<Action> bindings) {
+		super.configureActions(bindings);
+		bindings.add(AttributeTypesAction.class);
 	}
 
 	@Override
@@ -69,24 +69,15 @@ public class EcoreGLSPModule extends DefaultGLSPModule {
 	}
 
 	@Override
-	protected Collection<Class<? extends DiagramConfiguration>> bindDiagramConfigurations() {
-		return List.of(EcoreDiagramConfiguration.class);
-	}
-
-	@SuppressWarnings("serial")
-	@Override
-	protected Collection<Class<? extends OperationHandler>> bindOperationHandlers() {
-		return new ArrayList<Class<? extends OperationHandler>>() {
-			{
-				add(EcoreChangeBoundsOperationHandler.class);
-				add(EcoreDeleteOperationHandler.class);
-				add(CreateClassifierNodeOperationHandler.class);
-				add(CreateEcoreEdgeOperationHandler.class);
-				add(CreateClassifierChildNodeOperationHandler.class);
-				add(EcoreLabelEditOperationHandler.class);
-				add(ChangeRoutingPointsOperationHandler.class);
-			}
-		};
+	protected void configureOperationHandlers(MultiBindings<OperationHandler> bindings) {
+		super.configureOperationHandlers(bindings);
+		bindings.add(EcoreChangeBoundsOperationHandler.class);
+		bindings.add(EcoreDeleteOperationHandler.class);
+		bindings.add(CreateClassifierNodeOperationHandler.class);
+		bindings.add(CreateEcoreEdgeOperationHandler.class);
+		bindings.add(CreateClassifierChildNodeOperationHandler.class);
+		bindings.add(EcoreLabelEditOperationHandler.class);
+		bindings.add(ChangeRoutingPointsOperationHandler.class);
 	}
 
 	@Override
@@ -97,6 +88,11 @@ public class EcoreGLSPModule extends DefaultGLSPModule {
 	@Override
 	protected Class<? extends ModelStateProvider> bindModelStateProvider() {
 		return EcoreModelStateProvider.class;
+	}
+
+	@Override
+	protected void configureDiagramConfigurations(MultiBindings<DiagramConfiguration> bindings) {
+		bindings.add(EcoreDiagramConfiguration.class);
 	}
 
 }
